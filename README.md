@@ -11,3 +11,5 @@ Install the JavaScript dependencies:
 ```php
 php artisan migrate --seed
 ```
+
+[laravel-video-chat](https://github.com/PHPJunior/laravel-video-chat)
