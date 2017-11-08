@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use PhpJunior\LaravelVideoChat\Facades\Chat;
+use PhpJunior\LaravelVideoChat\Models\File\File;
 
 class HomeController extends Controller
 {
@@ -57,5 +58,15 @@ class HomeController extends Controller
     public function groupSend(Request $request)
     {
         Chat::sendGroupConversationMessage($request->input('groupConversationId'), $request->input('text'));
+    }
+
+    public function sendFilesInConversation(Request $request)
+    {
+        Chat::sendFilesInConversation($request->input('conversationId') , $request->file('files'));
+    }
+
+    public function sendFilesInGroupConversation(Request $request)
+    {
+        Chat::sendFilesInGroupConversation($request->input('groupConversationId') , $request->file('files'));
     }
 }

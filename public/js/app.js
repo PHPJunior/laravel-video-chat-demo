@@ -55293,12 +55293,59 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 $(function () {
     var localVideo = document.getElementById('localVideo');
     var remoteVideo = document.getElementById('remoteVideo');
+    var answerButton = document.getElementById('answerCallButton');
+
+    answerButton.onclick = answerCall;
+
+    $('input[type=file]').on('change', prepareUpload);
 });
+
+var files;
 
 var conversationID;
 var luid;
@@ -55356,6 +55403,17 @@ var candidateDidReceived = false;
                 _this.text = '';
             });
         },
+        sendFiles: function sendFiles() {
+            var data = new FormData();
+
+            $.each(files, function (key, value) {
+                data.append('files[]', value);
+            });
+
+            data.append('conversationId', this.conversationId);
+
+            axios.post('/chat/message/send/file', data);
+        },
 
         listenForNewMessage: function listenForNewMessage() {
             var _this2 = this;
@@ -55363,6 +55421,12 @@ var candidateDidReceived = false;
             Echo.join(this.channel).here(function (users) {
                 console.log(users);
             }).listen('\\PhpJunior\\LaravelVideoChat\\Events\\NewConversationMessage', function (data) {
+                var self = _this2;
+                if (data.files.length > 0) {
+                    $.each(data.files, function (key, value) {
+                        self.conversation.files.push(value);
+                    });
+                }
                 _this2.messages.push(data);
             }).listen('\\PhpJunior\\LaravelVideoChat\\Events\\VideoChatStart', function (data) {
 
@@ -55413,11 +55477,6 @@ function onSignalClose() {
 
     closeMedia();
     clearView();
-
-    //Send candidate to remote side
-    conversationID = Cookies.get('conversationID');
-    var message = { from: luid, to: ruid, type: 'signal', subtype: 'close', content: 'close', time: new Date() };
-    axios.post('/trigger/' + conversationID, message);
 }
 
 function closeMedia() {
@@ -55465,13 +55524,14 @@ function onRemoteAnswer(answer) {
 
 function onSignalOffer(offer) {
     Cookies.set('offer', offer);
-    answerCall();
+    $('#incomingVideoCallModal').modal('show');
 }
 
 function answerCall() {
     isCaller = false;
     luid = Cookies.get('uuid');
     ruid = Cookies.get('remoteUUID');
+    $('#incomingVideoCallModal').modal('hide');
     start();
 }
 
@@ -55648,6 +55708,10 @@ function trace(arg) {
     console.log(now + ': ', arg);
 }
 
+function prepareUpload(event) {
+    files = event.target.files;
+}
+
 /***/ }),
 /* 107 */
 /***/ (function(module, exports, __webpack_require__) {
@@ -55656,95 +55720,116 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-md-6" }, [
-      _c("div", { staticClass: "panel panel-primary" }, [
-        _c("div", { staticClass: "panel-heading" }, [
-          _c("span", { staticClass: "glyphicon glyphicon-comment" }),
-          _vm._v(
-            " Chat with " + _vm._s(_vm.withUser.name) + "\n\n                "
-          ),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-warning btn-sm pull-right",
-              attrs: { type: "button" },
-              on: {
-                click: function($event) {
-                  _vm.startVideoCallToUser(_vm.withUser.id)
-                }
-              }
-            },
-            [
-              _c("span", { staticClass: "fa fa-video-camera" }),
-              _vm._v(" Video Call\n                ")
-            ]
-          )
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "panel-body" }, [
-          _c(
-            "ul",
-            {
-              directives: [{ name: "chat-scroll", rawName: "v-chat-scroll" }],
-              staticClass: "chat"
-            },
-            _vm._l(_vm.messages, function(message) {
-              return _c(
-                "li",
-                {
-                  staticClass: "clearfix",
-                  class: {
-                    right: _vm.check(message.sender.id),
-                    left: !_vm.check(message.sender.id)
+  return _c("div", [
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-md-6" }, [
+        _c("div", { staticClass: "panel panel-primary" }, [
+          _c("div", { staticClass: "panel-heading" }, [
+            _c("span", { staticClass: "glyphicon glyphicon-comment" }),
+            _vm._v(
+              " Chat with " +
+                _vm._s(_vm.withUser.name) +
+                "\n\n                    "
+            ),
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-warning btn-sm pull-right",
+                attrs: { type: "button" },
+                on: {
+                  click: function($event) {
+                    _vm.startVideoCallToUser(_vm.withUser.id)
                   }
-                },
-                [
-                  _c(
-                    "span",
-                    {
-                      staticClass: "chat-img",
-                      class: {
-                        "pull-right": _vm.check(message.sender.id),
-                        "pull-left": !_vm.check(message.sender.id)
-                      }
-                    },
-                    [
-                      _c("img", {
-                        staticClass: "img-circle",
-                        attrs: {
-                          src:
-                            "http://placehold.it/50/FA6F57/fff&text=" +
-                            message.sender.name,
-                          alt: "User Avatar"
+                }
+              },
+              [
+                _c("span", { staticClass: "fa fa-video-camera" }),
+                _vm._v(" Video Call\n                    ")
+              ]
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "panel-body" }, [
+            _c(
+              "ul",
+              {
+                directives: [{ name: "chat-scroll", rawName: "v-chat-scroll" }],
+                staticClass: "chat"
+              },
+              _vm._l(_vm.messages, function(message) {
+                return _c(
+                  "li",
+                  {
+                    staticClass: "clearfix",
+                    class: {
+                      right: _vm.check(message.sender.id),
+                      left: !_vm.check(message.sender.id)
+                    }
+                  },
+                  [
+                    _c(
+                      "span",
+                      {
+                        staticClass: "chat-img",
+                        class: {
+                          "pull-right": _vm.check(message.sender.id),
+                          "pull-left": !_vm.check(message.sender.id)
                         }
-                      })
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "chat-body clearfix" }, [
-                    _c("div", { staticClass: "header" }, [
-                      _c(
-                        "small",
-                        { staticClass: " text-muted" },
-                        [
-                          _c("span", {
-                            staticClass: "glyphicon glyphicon-time"
-                          }),
-                          _c("timeago", {
-                            attrs: {
-                              since: message.created_at,
-                              "auto-update": 10
+                      },
+                      [
+                        _c("img", {
+                          staticClass: "img-circle",
+                          attrs: {
+                            src:
+                              "http://placehold.it/50/FA6F57/fff&text=" +
+                              message.sender.name,
+                            alt: "User Avatar"
+                          }
+                        })
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "chat-body clearfix" }, [
+                      _c("div", { staticClass: "header" }, [
+                        _c(
+                          "small",
+                          { staticClass: " text-muted" },
+                          [
+                            _c("span", {
+                              staticClass: "glyphicon glyphicon-time"
+                            }),
+                            _c("timeago", {
+                              attrs: {
+                                since: message.created_at,
+                                "auto-update": 10
+                              }
+                            })
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "strong",
+                          {
+                            staticClass: "primary-font",
+                            class: {
+                              "pull-right": _vm.check(message.sender.id),
+                              "pull-left": !_vm.check(message.sender.id)
                             }
-                          })
-                        ],
-                        1
-                      ),
+                          },
+                          [
+                            _vm._v(
+                              "\n                                        " +
+                                _vm._s(message.sender.name) +
+                                "\n                                    "
+                            )
+                          ]
+                        )
+                      ]),
                       _vm._v(" "),
                       _c(
-                        "strong",
+                        "p",
                         {
-                          staticClass: "primary-font",
                           class: {
                             "pull-right": _vm.check(message.sender.id),
                             "pull-left": !_vm.check(message.sender.id)
@@ -55753,93 +55838,213 @@ var render = function() {
                         [
                           _vm._v(
                             "\n                                    " +
-                              _vm._s(message.sender.name) +
+                              _vm._s(message.text) +
                               "\n                                "
                           )
                         ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        { staticClass: "row" },
+                        _vm._l(message.files, function(file) {
+                          return _c("div", { staticClass: "col-md-3" }, [
+                            _c("img", {
+                              staticClass: "img-responsive",
+                              attrs: { src: file.file_details.webPath, alt: "" }
+                            }),
+                            _vm._v(" "),
+                            _c(
+                              "a",
+                              {
+                                attrs: {
+                                  href: file.file_details.webPath,
+                                  target: "_blank",
+                                  download: ""
+                                }
+                              },
+                              [_vm._v("Download - " + _vm._s(file.name))]
+                            )
+                          ])
+                        })
                       )
-                    ]),
-                    _vm._v(" "),
-                    _c(
-                      "p",
-                      {
-                        class: {
-                          "pull-right": _vm.check(message.sender.id),
-                          "pull-left": !_vm.check(message.sender.id)
-                        }
-                      },
-                      [
-                        _vm._v(
-                          "\n                                " +
-                            _vm._s(message.text) +
-                            "\n                            "
-                        )
-                      ]
-                    )
-                  ])
-                ]
-              )
-            })
-          )
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "panel-footer" }, [
-          _c("div", { staticClass: "input-group" }, [
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.text,
-                  expression: "text"
-                }
-              ],
-              staticClass: "form-control input-sm",
-              attrs: {
-                id: "btn-input",
-                type: "text",
-                placeholder: "Type your message here..."
-              },
-              domProps: { value: _vm.text },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
+                    ])
+                  ]
+                )
+              })
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "panel-footer" }, [
+            _c("div", { staticClass: "input-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.text,
+                    expression: "text"
                   }
-                  _vm.text = $event.target.value
+                ],
+                staticClass: "form-control input-sm",
+                attrs: {
+                  id: "btn-input",
+                  type: "text",
+                  placeholder: "Type your message here..."
+                },
+                domProps: { value: _vm.text },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.text = $event.target.value
+                  }
                 }
-              }
-            }),
+              }),
+              _vm._v(" "),
+              _c("span", { staticClass: "input-group-btn" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-warning btn-sm",
+                    attrs: { type: "button", id: "btn-chat" },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        _vm.send()
+                      }
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\n                            Send\n                        "
+                    )
+                  ]
+                )
+              ])
+            ]),
             _vm._v(" "),
-            _c("span", { staticClass: "input-group-btn" }, [
+            _c("div", { staticClass: "input-group" }, [
+              _c("input", {
+                staticClass: "form-control",
+                attrs: { type: "file", multiple: "" }
+              }),
+              _vm._v(" "),
+              _c("span", { staticClass: "input-group-btn" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-warning btn-sm",
+                    attrs: { type: "button" },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        _vm.sendFiles()
+                      }
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\n                            Send Files\n                        "
+                    )
+                  ]
+                )
+              ])
+            ])
+          ])
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "col-md-6" }, [_c("video-section")], 1),
+      _vm._v(" "),
+      _vm._m(0)
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "row" },
+      _vm._l(_vm.conversation.files, function(file) {
+        return _c("div", { staticClass: "col-md-3" }, [
+          _c("img", {
+            staticClass: "img-responsive",
+            attrs: { src: file.file_details.webPath, alt: "" }
+          }),
+          _vm._v(" "),
+          _c(
+            "a",
+            {
+              attrs: {
+                href: file.file_details.webPath,
+                target: "_blank",
+                download: ""
+              }
+            },
+            [_vm._v("Download - " + _vm._s(file.name))]
+          )
+        ])
+      })
+    )
+  ])
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c(
+      "div",
+      {
+        staticClass: "modal fade",
+        attrs: { id: "incomingVideoCallModal", role: "dialog" }
+      },
+      [
+        _c("div", { staticClass: "modal-dialog" }, [
+          _c("div", { staticClass: "modal-content" }, [
+            _c("div", { staticClass: "modal-header" }, [
               _c(
                 "button",
                 {
-                  staticClass: "btn btn-warning btn-sm",
-                  attrs: { type: "button", id: "btn-chat" },
-                  on: {
-                    click: function($event) {
-                      $event.preventDefault()
-                      _vm.send()
-                    }
+                  staticClass: "close",
+                  attrs: { type: "button", "data-dismiss": "modal" }
+                },
+                [_vm._v("×")]
+              ),
+              _vm._v(" "),
+              _c("h4", { staticClass: "modal-title" }, [
+                _vm._v("Incoming Call")
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "modal-footer" }, [
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-success",
+                  attrs: { type: "button", id: "answerCallButton" }
+                },
+                [_vm._v("Answer")]
+              ),
+              _vm._v(" "),
+              _c(
+                "button",
+                {
+                  staticClass: "btn btn-danger",
+                  attrs: {
+                    type: "button",
+                    id: "denyCallButton",
+                    "data-dismiss": "modal"
                   }
                 },
-                [
-                  _vm._v(
-                    "\n                            Send\n                        "
-                  )
-                ]
+                [_vm._v("Deny")]
               )
             ])
           ])
         ])
-      ])
-    ]),
-    _vm._v(" "),
-    _c("div", { staticClass: "col-md-6" }, [_c("video-section")], 1)
-  ])
-}
-var staticRenderFns = []
+      ]
+    )
+  }
+]
 render._withStripped = true
 module.exports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
@@ -55992,6 +56197,38 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+$(function () {
+    $('input[type=file]').on('change', prepareUpload);
+});
+
+var files;
+
+function prepareUpload(event) {
+    files = event.target.files;
+}
 
 /* harmony default export */ __webpack_exports__["default"] = ({
     props: ['conversation', 'currentUser'],
@@ -56018,6 +56255,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 _this.text = '';
             });
         },
+        sendFiles: function sendFiles() {
+            var data = new FormData();
+
+            $.each(files, function (key, value) {
+                data.append('files[]', value);
+            });
+
+            data.append('groupConversationId', this.groupConversationId);
+
+            axios.post('/group/chat/message/send/file', data);
+        },
         leaveFromGroup: function leaveFromGroup() {
             axios.post('/group/chat/leave/' + this.groupConversationId).then(function (response) {
                 window.location = '/';
@@ -56030,6 +56278,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             Echo.join(this.channel).here(function (users) {
                 console.log(users);
             }).listen('\\PhpJunior\\LaravelVideoChat\\Events\\NewGroupConversationMessage', function (data) {
+                var self = _this2;
+                if (data.files.length > 0) {
+                    $.each(data.files, function (key, value) {
+                        self.conversation.files.push(value);
+                    });
+                }
                 _this2.messages.push(data);
             });
         }
@@ -56047,89 +56301,108 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col-md-6" }, [
-      _c("div", { staticClass: "panel panel-primary" }, [
-        _c("div", { staticClass: "panel-heading" }, [
-          _c("span", { staticClass: "glyphicon glyphicon-comment" }),
-          _vm._v(
-            _vm._s(_vm.conversation.group_conversation.name) +
-              "\n\n                "
-          ),
-          _c(
-            "button",
-            {
-              staticClass: "btn btn-danger btn-sm pull-right",
-              attrs: { type: "button" },
-              on: { click: _vm.leaveFromGroup }
-            },
-            [_vm._v("\n                    Leave\n                ")]
-          )
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "panel-body" }, [
-          _c(
-            "ul",
-            {
-              directives: [{ name: "chat-scroll", rawName: "v-chat-scroll" }],
-              staticClass: "chat"
-            },
-            _vm._l(_vm.messages, function(message) {
-              return _c(
-                "li",
-                {
-                  staticClass: "clearfix",
-                  class: {
-                    right: _vm.check(message.sender.id),
-                    left: !_vm.check(message.sender.id)
-                  }
-                },
-                [
-                  _c(
-                    "span",
-                    {
-                      staticClass: "chat-img",
-                      class: {
-                        "pull-right": _vm.check(message.sender.id),
-                        "pull-left": !_vm.check(message.sender.id)
-                      }
-                    },
-                    [
-                      _c("img", {
-                        staticClass: "img-circle",
-                        attrs: {
-                          src:
-                            "http://placehold.it/50/FA6F57/fff&text=" +
-                            message.sender.name,
-                          alt: "User Avatar"
+  return _c("div", [
+    _c("div", { staticClass: "row" }, [
+      _c("div", { staticClass: "col-md-6" }, [
+        _c("div", { staticClass: "panel panel-primary" }, [
+          _c("div", { staticClass: "panel-heading" }, [
+            _c("span", { staticClass: "glyphicon glyphicon-comment" }),
+            _vm._v(
+              _vm._s(_vm.conversation.group_conversation.name) +
+                "\n\n                    "
+            ),
+            _c(
+              "button",
+              {
+                staticClass: "btn btn-danger btn-sm pull-right",
+                attrs: { type: "button" },
+                on: { click: _vm.leaveFromGroup }
+              },
+              [_vm._v("\n                        Leave\n                    ")]
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "panel-body" }, [
+            _c(
+              "ul",
+              {
+                directives: [{ name: "chat-scroll", rawName: "v-chat-scroll" }],
+                staticClass: "chat"
+              },
+              _vm._l(_vm.messages, function(message) {
+                return _c(
+                  "li",
+                  {
+                    staticClass: "clearfix",
+                    class: {
+                      right: _vm.check(message.sender.id),
+                      left: !_vm.check(message.sender.id)
+                    }
+                  },
+                  [
+                    _c(
+                      "span",
+                      {
+                        staticClass: "chat-img",
+                        class: {
+                          "pull-right": _vm.check(message.sender.id),
+                          "pull-left": !_vm.check(message.sender.id)
                         }
-                      })
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "chat-body clearfix" }, [
-                    _c("div", { staticClass: "header" }, [
-                      _c(
-                        "small",
-                        { staticClass: " text-muted" },
-                        [
-                          _c("span", {
-                            staticClass: "glyphicon glyphicon-time"
-                          }),
-                          _c("timeago", {
-                            attrs: {
-                              since: message.created_at,
-                              "auto-update": 10
+                      },
+                      [
+                        _c("img", {
+                          staticClass: "img-circle",
+                          attrs: {
+                            src:
+                              "http://placehold.it/50/FA6F57/fff&text=" +
+                              message.sender.name,
+                            alt: "User Avatar"
+                          }
+                        })
+                      ]
+                    ),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "chat-body clearfix" }, [
+                      _c("div", { staticClass: "header" }, [
+                        _c(
+                          "small",
+                          { staticClass: " text-muted" },
+                          [
+                            _c("span", {
+                              staticClass: "glyphicon glyphicon-time"
+                            }),
+                            _c("timeago", {
+                              attrs: {
+                                since: message.created_at,
+                                "auto-update": 10
+                              }
+                            })
+                          ],
+                          1
+                        ),
+                        _vm._v(" "),
+                        _c(
+                          "strong",
+                          {
+                            staticClass: "primary-font",
+                            class: {
+                              "pull-right": _vm.check(message.sender.id),
+                              "pull-left": !_vm.check(message.sender.id)
                             }
-                          })
-                        ],
-                        1
-                      ),
+                          },
+                          [
+                            _vm._v(
+                              "\n                                        " +
+                                _vm._s(message.sender.name) +
+                                "\n                                    "
+                            )
+                          ]
+                        )
+                      ]),
                       _vm._v(" "),
                       _c(
-                        "strong",
+                        "p",
                         {
-                          staticClass: "primary-font",
                           class: {
                             "pull-right": _vm.check(message.sender.id),
                             "pull-left": !_vm.check(message.sender.id)
@@ -56138,88 +56411,149 @@ var render = function() {
                         [
                           _vm._v(
                             "\n                                    " +
-                              _vm._s(message.sender.name) +
+                              _vm._s(message.text) +
                               "\n                                "
                           )
                         ]
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        { staticClass: "row" },
+                        _vm._l(message.files, function(file) {
+                          return _c("div", { staticClass: "col-md-3" }, [
+                            _c("img", {
+                              staticClass: "img-responsive",
+                              attrs: { src: file.file_details.webPath, alt: "" }
+                            }),
+                            _vm._v(" "),
+                            _c(
+                              "a",
+                              {
+                                attrs: {
+                                  href: file.file_details.webPath,
+                                  target: "_blank",
+                                  download: ""
+                                }
+                              },
+                              [_vm._v("Download - " + _vm._s(file.name))]
+                            )
+                          ])
+                        })
                       )
-                    ]),
-                    _vm._v(" "),
-                    _c(
-                      "p",
-                      {
-                        class: {
-                          "pull-right": _vm.check(message.sender.id),
-                          "pull-left": !_vm.check(message.sender.id)
-                        }
-                      },
-                      [
-                        _vm._v(
-                          "\n                                " +
-                            _vm._s(message.text) +
-                            "\n                            "
-                        )
-                      ]
-                    )
-                  ])
-                ]
-              )
-            })
-          )
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "panel-footer" }, [
-          _c("div", { staticClass: "input-group" }, [
-            _c("input", {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.text,
-                  expression: "text"
-                }
-              ],
-              staticClass: "form-control input-sm",
-              attrs: {
-                id: "btn-input",
-                type: "text",
-                placeholder: "Type your message here..."
-              },
-              domProps: { value: _vm.text },
-              on: {
-                input: function($event) {
-                  if ($event.target.composing) {
-                    return
+                    ])
+                  ]
+                )
+              })
+            )
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "panel-footer" }, [
+            _c("div", { staticClass: "input-group" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.text,
+                    expression: "text"
                   }
-                  _vm.text = $event.target.value
-                }
-              }
-            }),
-            _vm._v(" "),
-            _c("span", { staticClass: "input-group-btn" }, [
-              _c(
-                "button",
-                {
-                  staticClass: "btn btn-warning btn-sm",
-                  attrs: { type: "button", id: "btn-chat" },
-                  on: {
-                    click: function($event) {
-                      $event.preventDefault()
-                      _vm.send()
-                    }
-                  }
+                ],
+                staticClass: "form-control input-sm",
+                attrs: {
+                  id: "btn-input",
+                  type: "text",
+                  placeholder: "Type your message here..."
                 },
-                [
-                  _vm._v(
-                    "\n                            Send\n                        "
-                  )
-                ]
-              )
+                domProps: { value: _vm.text },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.text = $event.target.value
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _c("span", { staticClass: "input-group-btn" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-warning btn-sm",
+                    attrs: { type: "button", id: "btn-chat" },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        _vm.send()
+                      }
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\n                            Send\n                        "
+                    )
+                  ]
+                )
+              ])
+            ]),
+            _vm._v(" "),
+            _c("div", { staticClass: "input-group" }, [
+              _c("input", {
+                staticClass: "form-control",
+                attrs: { type: "file", multiple: "" }
+              }),
+              _vm._v(" "),
+              _c("span", { staticClass: "input-group-btn" }, [
+                _c(
+                  "button",
+                  {
+                    staticClass: "btn btn-warning btn-sm",
+                    attrs: { type: "button" },
+                    on: {
+                      click: function($event) {
+                        $event.preventDefault()
+                        _vm.sendFiles()
+                      }
+                    }
+                  },
+                  [
+                    _vm._v(
+                      "\n                            Send Files\n                        "
+                    )
+                  ]
+                )
+              ])
             ])
           ])
         ])
       ])
-    ])
+    ]),
+    _vm._v(" "),
+    _c(
+      "div",
+      { staticClass: "row" },
+      _vm._l(_vm.conversation.files, function(file) {
+        return _c("div", { staticClass: "col-md-3" }, [
+          _c("img", {
+            staticClass: "img-responsive",
+            attrs: { src: file.file_details.webPath, alt: "" }
+          }),
+          _vm._v(" "),
+          _c(
+            "a",
+            {
+              attrs: {
+                href: file.file_details.webPath,
+                target: "_blank",
+                download: ""
+              }
+            },
+            [_vm._v("Download - " + _vm._s(file.name))]
+          )
+        ])
+      })
+    )
   ])
 }
 var staticRenderFns = []

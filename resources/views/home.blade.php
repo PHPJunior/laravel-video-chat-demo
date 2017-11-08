@@ -6,8 +6,25 @@
         <div class="col-md-4">
             <ul class="list-group">
                 @foreach($threads as $inbox)
-                    @if(!is_null($inbox->message))
-                        <li class="list-group-item">
+                    {{--@if(!is_null($inbox->message))--}}
+                        {{--<li class="list-group-item">--}}
+                            {{--<a href="{{ route('chat' , [--}}
+                                {{--'id' => $inbox->message->conversation->id--}}
+                            {{--]) }}">--}}
+                                {{--<div class="about">--}}
+                                    {{--<div class="name">{{$inbox->user->name}}</div>--}}
+                                    {{--<div class="status">--}}
+                                        {{--@if(auth()->user()->id == $inbox->message->sender->id)--}}
+                                            {{--<span class="fa fa-reply"></span>--}}
+                                        {{--@endif--}}
+                                        {{--<span>{{ substr($inbox->message->text, 0, 20)}}</span>--}}
+                                    {{--</div>--}}
+                                {{--</div>--}}
+                            {{--</a>--}}
+                        {{--</li>--}}
+                    {{--@endif--}}
+
+                        @if($inbox->message->conversation->is_accepted)
                             <a href="{{ route('chat' , [
                                 'id' => $inbox->message->conversation->id
                             ]) }}">
@@ -21,8 +38,27 @@
                                     </div>
                                 </div>
                             </a>
-                        </li>
-                    @endif
+                        @else
+                            <a href="#">
+                                <div class="about">
+                                    <div class="name">{{$inbox->user->name}}</div>
+                                    <div class="status">
+                                        @if(auth()->user()->id == $inbox->message->sender->id)
+                                            <span class="fa fa-reply"></span>
+                                        @endif
+                                        <span>{{ substr($inbox->message->text, 0, 20)}}</span>
+                                    </div>
+                                    @if($inbox->message->conversation->second_user_id == auth()->user()->id)
+                                        <div>
+                                            <a href="{{ route('accept.message' , [
+                                'id' => $inbox->message->conversation->id
+                            ]) }}" class="btn btn-xs btn-success">Accept Message Request</a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </a>
+                        @endif
+
                 @endforeach
 
                 @foreach($groups as $group)

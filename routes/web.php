@@ -20,7 +20,14 @@ Route::get('/chat/{id}', 'HomeController@chat')->name('chat');
 Route::get('/group/chat/{id}', 'HomeController@groupChat')->name('group.chat');
 
 Route::post('/chat/message/send', 'HomeController@send')->name('chat.send');
+Route::post('/chat/message/send/file', 'HomeController@sendFilesInConversation')->name('chat.send.file');
 Route::post('/group/chat/message/send', 'HomeController@groupSend')->name('group.send');
+Route::post('/group/chat/message/send/file', 'HomeController@sendFilesInGroupConversation')->name('group.send.file');
+
+Route::get('/accept/message/request/{id}' , function ($id){
+    Chat::acceptMessageRequest($id);
+    return redirect()->back();
+})->name('accept.message');
 
 Route::post('/trigger/{id}' , function (\Illuminate\Http\Request $request , $id) {
     Chat::startVideoCall($id , $request->all());
